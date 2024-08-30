@@ -1,0 +1,557 @@
+<html><head>
+<title>Galagames - Galactic Trader</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'VT323', monospace;
+}
+
+body {
+    background: #000;
+    color: #0f0;
+    overflow-x: hidden;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="%230f0" stroke="%23fff" stroke-width="2"/></svg>') 12 12, auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    animation: twinkle 3s infinite;
+}
+
+header {
+    padding: 20px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.7);
+    border-bottom: 2px solid #0f0;
+}
+
+h1 {
+    font-size: 3em;
+    color: #0f0;
+    text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
+    animation: glitch 1s linear infinite;
+}
+
+@keyframes glitch {
+    2%, 64% { transform: translate(2px, 0) skew(0deg); }
+    4%, 60% { transform: translate(-2px, 0) skew(0deg); }
+    62% { transform: translate(0, 0) skew(5deg); }
+}
+
+nav {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+nav a {
+    color: #0ff;
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 1.2em;
+    transition: all 0.3s ease;
+}
+
+nav a:hover {
+    color: #f0f;
+    text-shadow: 0 0 10px #f0f;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    margin: 20px;
+    gap: 20px;
+}
+
+#game-section {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+#game-container {
+    width: 100%;
+    height: 600px;
+    background: rgba(0, 30, 60, 0.7);
+    border: 1px solid #0f0;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+}
+
+#market-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.market-item {
+    background: rgba(0, 30, 60, 0.7);
+    border: 1px solid #0f0;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin: 5px;
+    flex: 1 1 calc(20% - 10px);
+}
+
+.market-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px #0f0;
+}
+
+button {
+    background: #0f0;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: #0ff;
+    transform: scale(1.05);
+}
+
+#player-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#spaceship {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    transition: all 0.5s ease;
+}
+
+.planet {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    font-size: 0.8em;
+}
+
+.planet:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+}
+
+.planet::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 70%);
+}
+
+#message-box {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#price-tables {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.price-table {
+    border-collapse: collapse;
+    width: 100%;
+    background: rgba(0, 30, 60, 0.7);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.price-table th, .price-table td {
+    border: 1px solid #0f0;
+    padding: 8px;
+    text-align: center;
+}
+
+.price-table th {
+    background-color: rgba(0, 255, 0, 0.2);
+}
+
+.price-table tr:nth-child(even) {
+    background-color: rgba(0, 30, 60, 0.3);
+}
+
+.price-table tr:hover {
+    background-color: rgba(0, 255, 0, 0.1);
+}
+
+footer {
+    background: rgba(0, 0, 0, 0.7);
+    color: #00f;
+    text-align: center;
+    padding: 20px;
+    border-top: 2px solid #0f0;
+}
+
+footer a {
+    color: #00f;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    color: #0ff;
+}
+
+/* Scrollbar Styles */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #0f0;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #0ff;
+}
+</style>
+</head>
+<body>
+<div class="starfield" id="starfield"></div>
+
+<header>
+    <h1>Galactic Trader</h1>
+
+</header>
+
+<main>
+    <section id="game-section">
+        <div id="game-container">
+            <div id="player-info">
+                Credits: <span id="credits">1000</span><br>
+                Cargo: <span id="cargo">0</span>/100
+            </div>
+            <svg id="spaceship" viewBox="0 0 100 100">
+                <path d="M50 10 L90 90 L50 70 L10 90 Z" fill="#0f0" />
+            </svg>
+            <div id="message-box"></div>
+        </div>
+        <div id="market-container"></div>
+    </section>
+    <section id="price-tables"></section>
+</main>
+
+
+
+<script>
+const starfield = document.getElementById('starfield');
+const gameContainer = document.getElementById('game-container');
+const spaceship = document.getElementById('spaceship');
+const marketContainer = document.getElementById('market-container');
+const creditsDisplay = document.getElementById('credits');
+const cargoDisplay = document.getElementById('cargo');
+const messageBox = document.getElementById('message-box');
+const priceTablesContainer = document.getElementById('price-tables');
+
+let credits = 1000;
+let cargo = 0;
+let currentPlanet = null;
+
+const resources = ['Dilithium', 'Tritanium', 'Latinum', 'Duranium', 'Verterium'];
+const planets = [
+    { name: 'Alpha', x: 100, y: 100, color: '#ff6b6b', atmosphere: 'rgba(255, 107, 107, 0.3)' },
+    { name: 'Beta', x: 700, y: 100, color: '#4ecdc4', atmosphere: 'rgba(78, 205, 196, 0.3)' },
+    { name: 'Gamma', x: 400, y: 500, color: '#45b7d1', atmosphere: 'rgba(69, 183, 209, 0.3)' },
+    { name: 'Delta', x: 200, y: 300, color: '#f7b731', atmosphere: 'rgba(247, 183, 49, 0.3)' },
+    { name: 'Epsilon', x: 600, y: 400, color: '#a55eea', atmosphere: 'rgba(165, 94, 234, 0.3)' },
+    { name: 'Zeta', x: 300, y: 200, color: '#26de81', atmosphere: 'rgba(38, 222, 129, 0.3)' },
+    { name: 'Eta', x: 500, y: 300, color: '#fd9644', atmosphere: 'rgba(253, 150, 68, 0.3)' },
+    { name: 'Theta', x: 150, y: 450, color: '#fc5c65', atmosphere: 'rgba(252, 92, 101, 0.3)' },
+    { name: 'Iota', x: 650, y: 250, color: '#2bcbba', atmosphere: 'rgba(43, 203, 186, 0.3)' },
+    { name: 'Kappa', x: 550, y: 150, color: '#778ca3', atmosphere: 'rgba(119, 140, 163, 0.3)' }
+];
+
+// Create starfield
+for (let i = 0; i < 100; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.width = Math.random() * 2 + 'px';
+    star.style.height = star.style.width;
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.animationDuration = (Math.random() * 3 + 1) + 's';
+    starfield.appendChild(star);
+}
+
+// Create planets
+planets.forEach(planet => {
+    const planetElement = document.createElement('div');
+    planetElement.className = 'planet';
+    planetElement.style.left = planet.x + 'px';
+    planetElement.style.top = planet.y + 'px';
+    planetElement.style.backgroundColor = planet.color;
+    planetElement.style.boxShadow = `0 0 20px ${planet.atmosphere}`;
+    planetElement.textContent = planet.name;
+    planetElement.addEventListener('click', () => travelToPlanet(planet));
+    gameContainer.appendChild(planetElement);
+});
+
+function travelToPlanet(planet) {
+    const startX = parseFloat(spaceship.style.left) || 0;
+    const startY = parseFloat(spaceship.style.top) || 0;
+    const endX = planet.x;
+    const endY = planet.y;
+
+    animateTravel(startX, startY, endX, endY);
+
+    currentPlanet = planet;
+    updateMarket();
+    displayMessage(`Travelling to planet ${planet.name}`);
+
+    gameContainer.style.pointerEvents = 'none';
+    setTimeout(() => {
+        gameContainer.style.pointerEvents = 'auto';
+        displayMessage(`Arrived at planet ${planet.name}`);
+    }, 1000);
+}
+
+function updateMarket() {
+    marketContainer.innerHTML = '';
+    resources.forEach(resource => {
+        const price = getPriceOnPlanet(resource, currentPlanet);
+        const marketItem = document.createElement('div');
+        marketItem.className = 'market-item';
+        marketItem.innerHTML = `
+            <h3>${resource}</h3>
+            <p>Price: ${price}</p>
+            <button onclick="buyResource('${resource}', ${price})">Buy</button>
+            <button onclick="sellResource('${resource}', ${price})">Sell</button>
+        `;
+        marketContainer.appendChild(marketItem);
+    });
+}
+
+function getPriceOnPlanet(resource, planet) {
+    // Generate a unique price for each resource on each planet
+    const seed = resources.indexOf(resource) * planets.indexOf(planet);
+    return Math.floor((Math.sin(seed) + 1) * 50) + 50; // Price between 50 and 150
+}
+
+function updatePriceTables() {
+    priceTablesContainer.innerHTML = '';
+    planets.forEach(planet => {
+        const table = document.createElement('table');
+        table.className = 'price-table';
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th colspan="2">${planet.name}</th>
+                </tr>
+                <tr>
+                    <th>Resource</th>
+                    <th>Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${resources.map(resource => `
+                    <tr>
+                        <td>${resource}</td>
+                        <td>${getPriceOnPlanet(resource, planet)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        `;
+        priceTablesContainer.appendChild(table);
+    });
+}
+
+function buyResource(resource, price) {
+    if (credits >= price && cargo < 100) {
+        credits -= price;
+        cargo += 1;
+        updateDisplay();
+        displayMessage(`Bought 1 unit of ${resource}`);
+    } else {
+        displayMessage("Can't buy: Not enough credits or cargo space");
+    }
+}
+
+function sellResource(resource, price) {
+    if (cargo > 0) {
+        credits += price;
+        cargo -= 1;
+        updateDisplay();
+        displayMessage(`Sold 1 unit of ${resource}`);
+    } else {
+        displayMessage("Can't sell: No cargo");
+    }
+}
+
+function updateDisplay() {
+    creditsDisplay.textContent = credits;
+    cargoDisplay.textContent = cargo;
+}
+
+function displayMessage(message) {
+    messageBox.textContent = message;
+    setTimeout(() => messageBox.textContent = '', 3000);
+}
+
+function animateTravel(startX, startY, endX, endY) {
+    const duration = 1000;
+    const startTime = Date.now();
+
+    function animate() {
+        const currentTime = Date.now();
+        const elapsedTime = currentTime - startTime;
+        const progress = Math.min(elapsedTime / duration, 1);
+
+        const currentX = startX + (endX - startX) * progress;
+        const currentY = startY + (endY - startY) * progress;
+
+        spaceship.style.left = currentX + 'px';
+        spaceship.style.top = currentY + 'px';
+
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    }
+
+    animate();
+}
+
+// Add random events
+setInterval(() => {
+    const eventChance = Math.random();
+    if (eventChance < 0.1) {
+        const eventType = Math.random();
+        if (eventType < 0.5) {
+            const bonus = Math.floor(Math.random() * 200) + 100;
+            credits += bonus;
+            displayMessage(`Lucky! You found ${bonus} credits floating in space!`);
+        } else {
+            const penalty = Math.floor(Math.random() * 100) + 50;
+            credits = Math.max(0, credits - penalty);
+            displayMessage(`Oh no! Space pirates stole ${penalty} credits!`);
+        }
+        updateDisplay();
+    }
+}, 30000);
+
+// Achievement system
+let achievements = {
+    firstTrade: false,
+    richTrader: false,
+    masterExplorer: false
+};
+
+function checkAchievements() {
+    if (!achievements.firstTrade && (credits !== 1000 || cargo !== 0)) {
+        achievements.firstTrade = true;
+        displayMessage("Achievement unlocked: First Trade!");
+    }
+    if (!achievements.richTrader && credits >= 5000) {
+        achievements.richTrader = true;
+        displayMessage("Achievement unlocked: Rich Trader!");
+    }
+    if (!achievements.masterExplorer && new Set(planets.map(p => p === currentPlanet)).size === planets.length) {
+        achievements.masterExplorer = true;
+        displayMessage("Achievement unlocked: Master Explorer!");
+    }
+}
+
+// Modify functions to check achievements
+const originalBuyResource = buyResource;
+buyResource = function() {
+    originalBuyResource.apply(this, arguments);
+    checkAchievements();
+};
+
+const originalSellResource = sellResource;
+sellResource = function() {
+    originalSellResource.apply(this, arguments);
+    checkAchievements();
+};
+
+const originalTravelToPlanet = travelToPlanet;
+travelToPlanet = function() {
+    originalTravelToPlanet.apply(this, arguments);
+    checkAchievements();
+};
+
+// Initialize game
+updateDisplay();
+updatePriceTables();
+travelToPlanet(planets[0]);
+
+// Add some interactivity and animations
+spaceship.addEventListener('mouseover', () => {
+    spaceship.style.transform = 'scale(1.1) rotate(10deg)';
+});
+
+spaceship.addEventListener('mouseout', () => {
+    spaceship.style.transform = 'scale(1) rotate(0deg)';
+});
+
+// Update price tables periodically
+setInterval(updatePriceTables, 60000); // Update every minute
+</script>
+</body>
+</html>
