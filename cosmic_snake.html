@@ -1,0 +1,278 @@
+<html><head><base href="https://party.websim.ai/games/games/snake">
+<title>Cosmic Snake - Galaxy Hacker Hub</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'VT323', monospace;
+}
+
+body {
+    background: #000;
+    color: #0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.starfield {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+}
+
+.star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+}
+
+@keyframes shootingStar {
+    0% { transform: translateX(0) translateY(0); opacity: 1; }
+    100% { transform: translateX(-100vw) translateY(100vh); opacity: 0; }
+}
+
+.shooting-star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: #fff;
+    animation: shootingStar 2s linear infinite;
+}
+
+h1 {
+    font-size: 3em;
+    color: #0f0;
+    text-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
+    margin-bottom: 20px;
+}
+
+#game-container {
+    border: 2px solid #0f0;
+    box-shadow: 0 0 20px #0f0;
+}
+
+#score {
+    font-size: 1.5em;
+    margin-top: 20px;
+}
+
+#controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    background: #0f0;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background: #0ff;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 2em;
+    }
+
+    #game-container {
+        width: 90vw !important;
+        height: 90vw !important;
+    }
+}
+</style>
+</head>
+<body>
+<div class="starfield" id="starfield"></div>
+
+<h1>Cosmic Snake</h1>
+<canvas id="game-container" width="400" height="400"></canvas>
+<div id="score">Score: 0</div>
+<div id="controls">
+    <button id="start-btn">Start Game</button>
+    <button id="reset-btn">Reset Game</button>
+</div>
+
+<script>
+const canvas = document.getElementById('game-container');
+const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
+const startBtn = document.getElementById('start-btn');
+const resetBtn = document.getElementById('reset-btn');
+
+// Game variables
+let snake = [{x: 200, y: 200}];
+let food = {};
+let dx = 10;
+let dy = 0;
+let score = 0;
+let gameLoop;
+let gameStarted = false;
+
+// Generate stars
+const starfield = document.getElementById('starfield');
+for (let i = 0; i < 100; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    star.style.width = Math.random() * 2 + 'px';
+    star.style.height = star.style.width;
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    starfield.appendChild(star);
+}
+
+// Shooting star animation
+setInterval(() => {
+    const shootingStar = document.createElement('div');
+    shootingStar.className = 'shooting-star';
+    shootingStar.style.left = '100%';
+    shootingStar.style.top = Math.random() * 100 + '%';
+    starfield.appendChild(shootingStar);
+    setTimeout(() => shootingStar.remove(), 2000);
+}, 5000);
+
+function generateFood() {
+    food = {
+        x: Math.floor(Math.random() * 39) * 10 + 10,
+        y: Math.floor(Math.random() * 39) * 10 + 10
+    };
+}
+
+function drawSnake() {
+    ctx.fillStyle = '#0f0';
+    snake.forEach(segment => {
+        ctx.fillRect(segment.x, segment.y, 10, 10);
+    });
+}
+
+function drawFood() {
+    ctx.fillStyle = '#f0f';
+    ctx.fillRect(food.x, food.y, 10, 10);
+}
+
+function moveSnake() {
+    const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+    snake.unshift(head);
+
+    if (head.x === food.x && head.y === food.y) {
+        score++;
+        scoreElement.textContent = `Score: ${score}`;
+        generateFood();
+    } else {
+        snake.pop();
+    }
+}
+
+function checkCollision() {
+    const head = snake[0];
+    if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+        return true;
+    }
+
+    for (let i = 1; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+function gameOver() {
+    clearInterval(gameLoop);
+    ctx.fillStyle = '#f00';
+    ctx.font = '30px VT323';
+    ctx.fillText('Game Over!', canvas.width / 2 - 60, canvas.height / 2);
+    gameStarted = false;
+    startBtn.textContent = 'Start Game';
+}
+
+function updateGame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawFood();
+    moveSnake();
+    drawSnake();
+
+    if (checkCollision()) {
+        gameOver();
+    }
+}
+
+function startGame() {
+    if (!gameStarted) {
+        snake = [{x: 200, y: 200}];
+        generateFood();
+        dx = 10;
+        dy = 0;
+        score = 0;
+        scoreElement.textContent = 'Score: 0';
+        gameLoop = setInterval(updateGame, 100);
+        gameStarted = true;
+        startBtn.textContent = 'Pause Game';
+    } else {
+        clearInterval(gameLoop);
+        gameStarted = false;
+        startBtn.textContent = 'Resume Game';
+    }
+}
+
+function resetGame() {
+    clearInterval(gameLoop);
+    snake = [{x: 200, y: 200}];
+    generateFood();
+    dx = 10;
+    dy = 0;
+    score = 0;
+    scoreElement.textContent = 'Score: 0';
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawFood();
+    drawSnake();
+    gameStarted = false;
+    startBtn.textContent = 'Start Game';
+}
+
+document.addEventListener('keydown', (e) => {
+    if (gameStarted) {
+        switch (e.key) {
+            case 'ArrowUp':
+                if (dy === 0) { dx = 0; dy = -10; }
+                break;
+            case 'ArrowDown':
+                if (dy === 0) { dx = 0; dy = 10; }
+                break;
+            case 'ArrowLeft':
+                if (dx === 0) { dx = -10; dy = 0; }
+                break;
+            case 'ArrowRight':
+                if (dx === 0) { dx = 10; dy = 0; }
+                break;
+        }
+    }
+});
+
+startBtn.addEventListener('click', startGame);
+resetBtn.addEventListener('click', resetGame);
+
+// Initial draw
+generateFood();
+drawFood();
+drawSnake();
+</script>
+</body>
+</html>
