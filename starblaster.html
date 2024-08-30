@@ -1,0 +1,375 @@
+<html><head><base href="https://galaxyhackerhub.com/games/star-blaster">
+<title>Star Blaster - Galaxy Hacker Hub</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Press Start 2P', cursive;
+    background-color: #000;
+    color: #0f0;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    border: 2px solid #0f0;
+    box-shadow: 0 0 10px #0f0, 0 0 20px #0f0, 0 0 30px #0f0;
+}
+
+#hud {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 14px;
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+}
+
+#upgrade-menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid #0f0;
+    padding: 20px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.upgrade-btn {
+    background-color: #000;
+    color: #0f0;
+    border: 1px solid #0f0;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.upgrade-btn:hover {
+    background-color: #0f0;
+    color: #000;
+}
+
+#start-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+#start-btn {
+    background-color: #0f0;
+    color: #000;
+    border: none;
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-family: 'Press Start 2P', cursive;
+}
+
+#start-btn:hover {
+    background-color: #00ff00;
+    box-shadow: 0 0 10px #0f0;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+#game-over {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 24px;
+    color: #f00;
+    text-shadow: 0 0 10px #f00;
+    animation: blink 1s infinite;
+    display: none;
+}
+
+#restart-btn {
+    background-color: #f00;
+    color: #fff;
+    border: none;
+    padding: 15px 30px;
+    font-size: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+    font-family: 'Press Start 2P', cursive;
+}
+
+#restart-btn:hover {
+    background-color: #ff0000;
+    box-shadow: 0 0 10px #f00;
+}
+</style>
+</head>
+<body>
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    <div id="hud">
+        Score: <span id="score">0</span><br>
+        Level: <span id="level">1</span><br>
+        Health: <span id="health">100</span>
+    </div>
+    <div id="upgrade-menu">
+        <button class="upgrade-btn" id="upgrade-speed">Upgrade Speed</button>
+        <button class="upgrade-btn" id="upgrade-firepower">Upgrade Firepower</button>
+        <button class="upgrade-btn" id="upgrade-health">Upgrade Health</button>
+    </div>
+    <div id="start-screen">
+        <h1>Star Blaster</h1>
+        <p>Defend the galaxy from incoming asteroids!</p>
+        <button id="start-btn">Start Game</button>
+    </div>
+    <div id="game-over">
+        <h2>Game Over</h2>
+        <p>Your Score: <span id="final-score"></span></p>
+        <button id="restart-btn">Play Again</button>
+    </div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 800;
+canvas.height = 600;
+
+const ship = {
+    x: canvas.width / 2,
+    y: canvas.height - 30,
+    width: 40,
+    height: 40,
+    speed: 5,
+    health: 100,
+    firepower: 1
+};
+
+let asteroids = [];
+let bullets = [];
+let score = 0;
+let level = 1;
+let gameLoop;
+let gameState = 'start'; // 'start', 'playing', 'upgrade', 'gameover'
+
+function drawShip() {
+    ctx.fillStyle = '#0f0';
+    ctx.beginPath();
+    ctx.moveTo(ship.x, ship.y);
+    ctx.lineTo(ship.x - 20, ship.y + 40);
+    ctx.lineTo(ship.x + 20, ship.y + 40);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawAsteroids() {
+    asteroids.forEach(asteroid => {
+        ctx.fillStyle = '#f00';
+        ctx.beginPath();
+        ctx.arc(asteroid.x, asteroid.y, asteroid.size, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+    });
+}
+
+function drawBullets() {
+    bullets.forEach(bullet => {
+        ctx.fillStyle = '#0ff';
+        ctx.fillRect(bullet.x, bullet.y, 4, 10);
+    });
+}
+
+function updateGame() {
+    // Move ship
+    if (keys.ArrowLeft && ship.x > 0) ship.x -= ship.speed;
+    if (keys.ArrowRight && ship.x < canvas.width) ship.x += ship.speed;
+
+    // Move bullets
+    bullets.forEach(bullet => bullet.y -= 10);
+    bullets = bullets.filter(bullet => bullet.y > 0);
+
+    // Move asteroids
+    asteroids.forEach(asteroid => asteroid.y += asteroid.speed);
+
+    // Collision detection
+    asteroids.forEach((asteroid, asteroidIndex) => {
+        bullets.forEach((bullet, bulletIndex) => {
+            if (collision(bullet, asteroid)) {
+                asteroids.splice(asteroidIndex, 1);
+                bullets.splice(bulletIndex, 1);
+                score += 10;
+                updateHUD();
+            }
+        });
+
+        if (collision(ship, asteroid)) {
+            ship.health -= 10;
+            asteroids.splice(asteroidIndex, 1);
+            updateHUD();
+            if (ship.health <= 0) {
+                gameOver();
+            }
+        }
+    });
+
+    // Remove off-screen asteroids
+    asteroids = asteroids.filter(asteroid => asteroid.y < canvas.height);
+
+    // Spawn new asteroids
+    if (asteroids.length < 5 + level) {
+        spawnAsteroid();
+    }
+
+    // Level up
+    if (score >= level * 100) {
+        levelUp();
+    }
+}
+
+function spawnAsteroid() {
+    asteroids.push({
+        x: Math.random() * canvas.width,
+        y: 0,
+        size: Math.random() * 20 + 10,
+        speed: Math.random() * 2 + 1
+    });
+}
+
+function collision(obj1, obj2) {
+    return obj1.x < obj2.x + obj2.size &&
+           obj1.x + obj1.width > obj2.x &&
+           obj1.y < obj2.y + obj2.size &&
+           obj1.y + obj1.height > obj2.y;
+}
+
+function levelUp() {
+    level++;
+    gameState = 'upgrade';
+    clearInterval(gameLoop);
+    showUpgradeMenu();
+}
+
+function showUpgradeMenu() {
+    document.getElementById('upgrade-menu').style.display = 'flex';
+}
+
+function hideUpgradeMenu() {
+    document.getElementById('upgrade-menu').style.display = 'none';
+}
+
+function updateHUD() {
+    document.getElementById('score').textContent = score;
+    document.getElementById('level').textContent = level;
+    document.getElementById('health').textContent = ship.health;
+}
+
+function gameOver() {
+    gameState = 'gameover';
+    clearInterval(gameLoop);
+    document.getElementById('game-over').style.display = 'block';
+    document.getElementById('final-score').textContent = score;
+}
+
+function restartGame() {
+    ship.health = 100;
+    ship.x = canvas.width / 2;
+    ship.y = canvas.height - 30;
+    asteroids = [];
+    bullets = [];
+    score = 0;
+    level = 1;
+    updateHUD();
+    document.getElementById('game-over').style.display = 'none';
+    startGame();
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawShip();
+    drawAsteroids();
+    drawBullets();
+}
+
+const keys = {};
+
+document.addEventListener('keydown', (e) => {
+    keys[e.code] = true;
+    if (e.code === 'Space' && gameState === 'playing') {
+        bullets.push({
+            x: ship.x - 2,
+            y: ship.y,
+            width: 4,
+            height: 10
+        });
+    }
+});
+
+document.addEventListener('keyup', (e) => {
+    keys[e.code] = false;
+});
+
+document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('start-screen').style.display = 'none';
+    startGame();
+});
+
+document.getElementById('restart-btn').addEventListener('click', restartGame);
+
+document.getElementById('upgrade-speed').addEventListener('click', () => {
+    ship.speed += 1;
+    resumeGameAfterUpgrade();
+});
+
+document.getElementById('upgrade-firepower').addEventListener('click', () => {
+    ship.firepower += 1;
+    resumeGameAfterUpgrade();
+});
+
+document.getElementById('upgrade-health').addEventListener('click', () => {
+    ship.health = Math.min(ship.health + 20, 100);
+    updateHUD();
+    resumeGameAfterUpgrade();
+});
+
+function resumeGameAfterUpgrade() {
+    hideUpgradeMenu();
+    gameState = 'playing';
+    gameLoop = setInterval(() => {
+        updateGame();
+        draw();
+    }, 1000 / 60);
+}
+
+function startGame() {
+    gameState = 'playing';
+    gameLoop = setInterval(() => {
+        updateGame();
+        draw();
+    }, 1000 / 60);
+}
+</script>
+</body>
+</html>
