@@ -210,6 +210,12 @@
                 <p>Defend your spaceship from incoming asteroids in this fast-paced space shooter!</p>
                 <a href="starblaster.html" class="play-button">Play Now</a>
             </div>
+            <div class="game-card">
+                <img src="https://raw.githubusercontent.com/prototbh/Galagames/main/Galactic%20Trader%20game%20screenshot%20showing%20a%20space%20station%20marketplace%20with%20various%20alien%20species_300x200xqJgCI1MYJukGVSTiGx1b56538b045c4.jpg" alt="Galactic Trader game screenshot showing a space station marketplace with various alien species" width="300" height="200">
+                <h2>Galactic Trader</h2>
+                <p>Trade goods and negotiate with alien species in the bustling marketplaces of space stations!</p>
+                <a href="galactictrader.html" class="play-button">Play Now</a>
+            </div>
         </div>
     </main>
     
@@ -242,7 +248,7 @@
     const gameCards = document.querySelectorAll('.game-card');
     gameCards.forEach(card => {
         card.addEventListener('mouseover', () => {
-            card.style.transform = 'translateY(-10px) scale(1.05)';
+            card.style.transform = 'translateY(-5px) scale(1.05)';
             card.style.boxShadow = '0 0 30px #0f0';
         });
         card.addEventListener('mouseout', () => {
