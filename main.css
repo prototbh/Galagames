@@ -1,0 +1,79 @@
+:root {
+  --foreground-half: rgb(255, 255, 255, 0.025);
+  --foreground: rgb(255, 255, 255, 0.05);
+  --foreground-double: rgb(255, 255, 255, 0.1);
+  --foreground-triple: rgb(255, 255, 255, 0.15);
+  --gradient-20: linear-gradient(var(--gradient-direction), rgb(var(--gradient-primary), 0.2), rgb(var(--gradient-secondary), 0.2));
+  --gradient-50: linear-gradient(var(--gradient-direction), rgb(var(--gradient-primary), 0.5), rgb(var(--gradient-secondary), 0.5));
+  --gradient-90: linear-gradient(var(--gradient-direction), rgb(var(--gradient-primary), 0.9), rgb(var(--gradient-secondary), 0.9));
+}
+
+.theme-dark {
+  --background-primary: transparent;
+  --background-secondary: rgb(0, 0, 0, 0.3);
+  --background-secondary-alt: transparent;
+  --background-tertiary: transparent;
+  --background-floating: transparent;
+  --background-modifier-hover: rgb(255, 255, 255, 0.05);
+  --background-modifier-active: rgb(255, 255, 255, 0.07);
+  --background-modifier-selected: rgb(255, 255, 255, 0.1);
+  --background-modifier-accent: rgb(255, 255, 255, 0.1);
+  --background-mentioned: rgb(250, 166, 26, 0.05);
+  --background-mentioned-hover: rgb(250, 166, 26, 0.08);
+  --background-message-hover: rgb(4, 4, 5, 0.07);
+  --elevation-stroke: 0 0 0 1px rgb(4, 4, 5, 0.15);
+  --elevation-low: 0 1px 0 rgb(4, 4, 5, 0.2), 0 1.5px 0 rgb(6, 6, 7, 0.05), 0 2px 0 rgb(4, 4, 5, 0.05);
+  --elevation-medium: 0 4px 4px rgb(0, 0, 0, 0.16);
+  --elevation-high: 0 8px 16px rgb(0, 0, 0, 0.24);
+  --channeltextarea-background: rgb(255, 255, 255, 0.05);
+  --deprecated-card-bg: rgb(0, 0, 0, 0.3);
+  --deprecated-card-editable-bg: rgb(0, 0, 0, 0.3);
+  --deprecated-text-input-bg: rgb(0, 0, 0, 0.1);
+  --deprecated-text-input-border: rgb(0, 0, 0, 0.3);
+  --deprecated-quickswitcher-input-placeholder: rgb(255, 255, 255, 0.5);
+}
+
+#app-mount .bg__960e4::before {
+  backdrop-filter: blur(var(--background-image-blur));
+}
+
+#app-mount .popout__3f413 {
+  backdrop-filter: blur(var(--overlay-blur, 5px));
+  background: rgb(0, 0, 0, var(--overlay-brightness));
+}
+
+#app-mount .jumpToPresentBar__0f481 {
+  backdrop-filter: blur(10px);
+}
+
+#app-mount .popoverReactionHoverBar_e986d9 {
+  backdrop-filter: blur(6px);
+}
+
+#app-mount .container-3kfp0r {
+  backdrop-filter: blur(var(--overlay-image-blur));
+}
+
+#app-mount .uploadModal-2ifh8j::after {
+  backdrop-filter: blur(var(--fb-popout-modal-image));
+}
+
+#app-mount .header_c6bf1b::before {
+  backdrop-filter: blur(var(--background-image-blur));
+}
+
+/* Hide the ::after pseudo-element for the sidebar */
+div.sidebar_c48ade::after {
+  content: none !important;
+}
+
+/* Make the background of the channel text areas transparent */
+.channelTextArea_f75fb0, 
+.channelTextArea__74017 {
+  background: transparent !important;
+}
+
+/* Set the background color for the chat content areas */
+main[class^="chatContent_"][aria-label*="channel"] {
+  background-color: rgba(0, 0, 0, 0) !important;
+}
