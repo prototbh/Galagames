@@ -46,7 +46,7 @@ We may update this policy to reflect changes in legal requirements or App featur
 
 8. Contact Us
 If you have questions or wish to exercise your privacy rights, email us at:
-privacy@pftp-app.com
+pftpsup@gmail.com
 
 Why HTTP Content & Capabilities Must Be Enabled
 Local HTTP Server Access. PFTP fetches files from a phone-based HTTP server (e.g., http://yourphoneip:port/). By default, UWP/Xbox apps require explicit manifest declarations to permit any network access, especially non-HTTPS endpoints 
